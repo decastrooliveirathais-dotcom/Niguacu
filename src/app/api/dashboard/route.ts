@@ -15,17 +15,20 @@ const FILTROS = (() => {
   const turnos = new Set<string>()
   const fases = new Set<string>()
   const modelos = new Set<string>()
+  const campus = new Set<string>()
   for (const item of RAW_DATA) {
     if (item.Curso) cursos.add(item.Curso)
     if (item.Turno) turnos.add(item.Turno)
     if (item.Fase) fases.add(item.Fase)
     if (item['Modelo de Ensino']) modelos.add(item['Modelo de Ensino'])
+    if (item['Campus / Polo']) campus.add(item['Campus / Polo'])
   }
   return {
     cursos: [...cursos].sort(),
     turnos: [...turnos].sort(),
     fases: [...fases].sort(),
-    modelos: [...modelos].sort()
+    modelos: [...modelos].sort(),
+    campus: [...campus].sort()
   }
 })()
 
@@ -49,12 +52,13 @@ export async function GET(request: Request) {
   const turno = searchParams.get('turno')
   const fase = searchParams.get('fase')
   const modelo = searchParams.get('modelo')
+  const campusFiltro = searchParams.get('campus')
   const flagFin = searchParams.get('flagFinanceira')
   const flagDoc = searchParams.get('flagDocumentacao')
   const flagAcad = searchParams.get('flagAcademica')
   const busca = searchParams.get('busca')?.toLowerCase()
   const pagina = parseInt(searchParams.get('pagina') || '1')
-  const visao = searchParams.get('visao') || 'geral'
+  const paginaVisao = parseInt(searchParams.get('paginaVisao') || '1')
   
   // Filtrar
   const dados = RAW_DATA.filter((item: Item) => {
@@ -62,13 +66,14 @@ export async function GET(request: Request) {
     if (turno && turno !== 'todos' && item.Turno !== turno) return false
     if (fase && fase !== 'todos' && item.Fase !== fase) return false
     if (modelo && modelo !== 'todos' && item['Modelo de Ensino'] !== modelo) return false
+    if (campusFiltro && campusFiltro !== 'todos' && item['Campus / Polo'] !== campusFiltro) return false
     if (flagFin === 'sim' && item['Flag Matrícula Financeira'] !== 1) return false
     if (flagFin === 'nao' && item['Flag Matrícula Financeira'] !== 0) return false
     if (flagDoc === 'sim' && item['Documentação Obrigatória Entregue'] !== 1) return false
     if (flagDoc === 'nao' && item['Documentação Obrigatória Entregue'] !== 0) return false
     if (flagAcad === 'sim' && item['Flag Matrícula Acadêmica'] !== 1) return false
     if (flagAcad === 'nao' && item['Flag Matrícula Acadêmica'] !== 0) return false
-    if (busca && !`${item.Curso} ${item.Turno} ${item.Fase} ${item['Status do Atendimento']} ${item['Modelo de Ensino']}`.toLowerCase().includes(busca)) return false
+    if (busca && !`${item.Curso} ${item.Turno} ${item.Fase} ${item['Status do Atendimento']} ${item['Modelo de Ensino']} ${item['Campus / Polo']}`.toLowerCase().includes(busca)) return false
     return true
   })
   
@@ -81,10 +86,10 @@ export async function GET(request: Request) {
   const modeloCount: Record<string, number> = {}
   const statusCount: Record<string, number> = {}
   
-  // Visão consolidada: Curso + Turno + Modelo + Status Confirmado
+  // Visão consolidada: Campus + Curso + Turno + Status Confirmado (SIM/NÃO)
   const visaoConsolidada: Record<string, { 
-    curso: string; turno: string; modelo: string
-    total: number; confirmados: number; naoConfirmados: number
+    campus: string; curso: string; turno: string
+    total: number; confirmadosSim: number; confirmadosNao: number
     matFin: number; matAcad: number; taxaConversao: string
   }> = {}
   
@@ -99,6 +104,7 @@ export async function GET(request: Request) {
     const c = item.Curso || 'N/I'
     const m = item['Modelo de Ensino'] || 'N/I'
     const s = item['Status do Atendimento'] || 'N/I'
+    const camp = item['Campus / Polo'] || 'N/I'
     
     faseCount[f] = (faseCount[f] || 0) + 1
     turnoCount[t] = (turnoCount[t] || 0) + 1
@@ -106,18 +112,21 @@ export async function GET(request: Request) {
     modeloCount[m] = (modeloCount[m] || 0) + 1
     statusCount[s] = (statusCount[s] || 0) + 1
     
-    // Visão consolidada
-    const key = `${c}|${t}|${m}`
+    // Visão consolidada: Campus + Curso + Turno
+    const key = `${camp}|${c}|${t}`
     if (!visaoConsolidada[key]) {
       visaoConsolidada[key] = { 
-        curso: c, turno: t, modelo: m,
-        total: 0, confirmados: 0, naoConfirmados: 0,
+        campus: camp, curso: c, turno: t,
+        total: 0, confirmadosSim: 0, confirmadosNao: 0,
         matFin: 0, matAcad: 0, taxaConversao: '0'
       }
     }
     visaoConsolidada[key].total++
-    if (s === 'Confirmado') visaoConsolidada[key].confirmados++
-    else visaoConsolidada[key].naoConfirmados++
+    if (s === 'Confirmado') {
+      visaoConsolidada[key].confirmadosSim++
+    } else {
+      visaoConsolidada[key].confirmadosNao++
+    }
     if (item['Flag Matrícula Financeira'] === 1) visaoConsolidada[key].matFin++
     if (item['Flag Matrícula Acadêmica'] === 1) visaoConsolidada[key].matAcad++
   }
@@ -130,24 +139,26 @@ export async function GET(request: Request) {
   // Ordenar visão consolidada por total
   const visaoOrdenada = Object.values(visaoConsolidada)
     .sort((a, b) => b.total - a.total)
-    .slice(0, 100) // Top 100 combinações
+    .slice(0, 200) // Top 200 combinações
   
   // Top 10 cursos
   const top10 = Object.entries(cursoCount).sort((a, b) => b[1] - a[1]).slice(0, 10)
     .map(([nome, quantidade]) => ({ nome, quantidade }))
   
-  // Paginação
+  // Paginação tabela detalhada
   const porPagina = 10
   const totalPaginas = Math.ceil(dados.length / porPagina)
   const inicio = (pagina - 1) * porPagina
   
-  // Tabela
+  // Tabela detalhada
   const tabela = dados.slice(inicio, inicio + porPagina).map((item: Item) => ({
+    campus: item['Campus / Polo'] || 'N/I',
     curso: item.Curso || 'N/I',
     turno: item.Turno || 'N/I',
+    modelo: item['Modelo de Ensino'] || 'N/I',
     fase: item.Fase || 'N/I',
     status: item['Status do Atendimento'] || 'N/I',
-    modelo: item['Modelo de Ensino'] || 'N/I',
+    confirmado: item['Status do Atendimento'] === 'Confirmado' ? 'SIM' : 'NÃO',
     fin: item['Flag Matrícula Financeira'] === 1 ? 'Sim' : 'Não',
     acad: item['Flag Matrícula Acadêmica'] === 1 ? 'Sim' : 'Não',
     doc: item['Documentação Obrigatória Entregue'] === 1 ? 'Entregue' : 'Pendente',
@@ -155,7 +166,6 @@ export async function GET(request: Request) {
   }))
   
   // Paginação para visão consolidada
-  const paginaVisao = parseInt(searchParams.get('paginaVisao') || '1')
   const porPaginaVisao = 15
   const totalPaginasVisao = Math.ceil(visaoOrdenada.length / porPaginaVisao)
   const inicioVisao = (paginaVisao - 1) * porPaginaVisao

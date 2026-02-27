@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
-import { Users, GraduationCap, FileCheck, FileText, TrendingUp, Search, RefreshCw, CheckCircle, XCircle, LayoutGrid, Table } from 'lucide-react'
+import { Users, GraduationCap, FileCheck, FileText, TrendingUp, Search, RefreshCw, CheckCircle, XCircle, LayoutGrid, Table, MapPin } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,7 +30,7 @@ function KPI({ titulo, valor, desc, icon: Icon, color }: { titulo: string; valor
 export default function Dashboard() {
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const [filtros, setFiltros] = useState({ curso: 'todos', turno: 'todos', fase: 'todos', modelo: 'todos', flagFin: 'todos', flagDoc: 'todos', flagAcad: 'todos', busca: '' })
+  const [filtros, setFiltros] = useState({ campus: 'todos', curso: 'todos', turno: 'todos', fase: 'todos', modelo: 'todos', flagFin: 'todos', flagDoc: 'todos', flagAcad: 'todos', busca: '' })
   const [pagina, setPagina] = useState(1)
   const [paginaVisao, setPaginaVisao] = useState(1)
   const [abaAtiva, setAbaAtiva] = useState<'graficos' | 'visao'>('graficos')
@@ -43,6 +43,7 @@ export default function Dashboard() {
     update({})
     
     const p = new URLSearchParams()
+    if (filtros.campus !== 'todos') p.set('campus', filtros.campus)
     if (filtros.curso !== 'todos') p.set('curso', filtros.curso)
     if (filtros.turno !== 'todos') p.set('turno', filtros.turno)
     if (filtros.fase !== 'todos') p.set('fase', filtros.fase)
@@ -78,7 +79,7 @@ export default function Dashboard() {
     setPaginaVisao(1) 
   }
   const clear = () => { 
-    setFiltros({ curso: 'todos', turno: 'todos', fase: 'todos', modelo: 'todos', flagFin: 'todos', flagDoc: 'todos', flagAcad: 'todos', busca: '' }); 
+    setFiltros({ campus: 'todos', curso: 'todos', turno: 'todos', fase: 'todos', modelo: 'todos', flagFin: 'todos', flagDoc: 'todos', flagAcad: 'todos', busca: '' }); 
     setPagina(1); 
     setPaginaVisao(1) 
   }
@@ -107,39 +108,45 @@ export default function Dashboard() {
         <Card className="shadow-sm mb-4">
           <CardContent className="pt-3 pb-3">
             <div className="flex flex-wrap gap-2">
-              <div className="relative flex-1 min-w-[150px] max-w-[250px]">
+              <div className="relative flex-1 min-w-[150px] max-w-[200px]">
                 <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
                 <Input placeholder="Buscar..." className="pl-8 h-9 text-sm" onChange={e => setF('busca', e.target.value)} />
               </div>
+              <Select value={filtros.campus} onValueChange={v => setF('campus', v)}>
+                <SelectTrigger className="w-[140px] h-9 text-sm"><SelectValue placeholder="Campus" /></SelectTrigger>
+                <SelectContent className="max-h-40">{data?.filtros?.campus?.map((c: string) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
               <Select value={filtros.curso} onValueChange={v => setF('curso', v)}>
                 <SelectTrigger className="w-[160px] h-9 text-sm"><SelectValue placeholder="Curso" /></SelectTrigger>
                 <SelectContent className="max-h-40">{data?.filtros?.cursos?.map((c: string) => <SelectItem key={c} value={c}>{c.length > 20 ? c.slice(0, 20) + '...' : c}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={filtros.turno} onValueChange={v => setF('turno', v)}>
-                <SelectTrigger className="w-[100px] h-9 text-sm"><SelectValue placeholder="Turno" /></SelectTrigger>
+                <SelectTrigger className="w-[90px] h-9 text-sm"><SelectValue placeholder="Turno" /></SelectTrigger>
                 <SelectContent>{data?.filtros?.turnos?.map((t: string) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={filtros.modelo} onValueChange={v => setF('modelo', v)}>
-                <SelectTrigger className="w-[120px] h-9 text-sm"><SelectValue placeholder="Modelo" /></SelectTrigger>
+                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Modelo" /></SelectTrigger>
                 <SelectContent>{data?.filtros?.modelos?.map((m: string) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={filtros.fase} onValueChange={v => setF('fase', v)}>
-                <SelectTrigger className="w-[140px] h-9 text-sm"><SelectValue placeholder="Fase" /></SelectTrigger>
+                <SelectTrigger className="w-[130px] h-9 text-sm"><SelectValue placeholder="Fase" /></SelectTrigger>
                 <SelectContent>{data?.filtros?.fases?.map((f: string) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
               </Select>
+              <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={clear}>Limpar</Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
               <Select value={filtros.flagFin} onValueChange={v => setF('flagFin', v)}>
-                <SelectTrigger className="w-[100px] h-9 text-sm"><SelectValue placeholder="Fin." /></SelectTrigger>
-                <SelectContent><SelectItem value="todos">Fin.</SelectItem><SelectItem value="sim">Sim</SelectItem><SelectItem value="nao">Não</SelectItem></SelectContent>
+                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Mat. Fin." /></SelectTrigger>
+                <SelectContent><SelectItem value="todos">Mat. Fin.</SelectItem><SelectItem value="sim">Sim</SelectItem><SelectItem value="nao">Não</SelectItem></SelectContent>
               </Select>
               <Select value={filtros.flagDoc} onValueChange={v => setF('flagDoc', v)}>
-                <SelectTrigger className="w-[100px] h-9 text-sm"><SelectValue placeholder="Doc." /></SelectTrigger>
-                <SelectContent><SelectItem value="todos">Doc.</SelectItem><SelectItem value="sim">Entregue</SelectItem><SelectItem value="nao">Pendente</SelectItem></SelectContent>
+                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Document." /></SelectTrigger>
+                <SelectContent><SelectItem value="todos">Document.</SelectItem><SelectItem value="sim">Entregue</SelectItem><SelectItem value="nao">Pendente</SelectItem></SelectContent>
               </Select>
               <Select value={filtros.flagAcad} onValueChange={v => setF('flagAcad', v)}>
-                <SelectTrigger className="w-[100px] h-9 text-sm"><SelectValue placeholder="Acad." /></SelectTrigger>
-                <SelectContent><SelectItem value="todos">Acad.</SelectItem><SelectItem value="sim">Sim</SelectItem><SelectItem value="nao">Não</SelectItem></SelectContent>
+                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Mat. Acad." /></SelectTrigger>
+                <SelectContent><SelectItem value="todos">Mat. Acad.</SelectItem><SelectItem value="sim">Sim</SelectItem><SelectItem value="nao">Não</SelectItem></SelectContent>
               </Select>
-              <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={clear}>Limpar</Button>
             </div>
           </CardContent>
         </Card>
@@ -175,7 +182,7 @@ export default function Dashboard() {
             className="h-8 text-xs"
             onClick={() => setAbaAtiva('visao')}
           >
-            <Table className="w-3.5 h-3.5 mr-1" /> Visão Consolidada
+            <MapPin className="w-3.5 h-3.5 mr-1" /> Visão Campus/Curso/Turno
           </Button>
         </div>
 
@@ -225,11 +232,11 @@ export default function Dashboard() {
             </Card>
           </div>
         ) : (
-          /* Visão Consolidada */
+          /* Visão Consolidada - Campus/Curso/Turno */
           <Card className="shadow-sm mb-4">
             <CardHeader className="py-2 px-3 flex-row flex justify-between items-center space-y-0">
               <div>
-                <CardTitle className="text-sm">Visão Consolidada: Curso × Turno × Modelo de Ensino</CardTitle>
+                <CardTitle className="text-sm">Visão Consolidada: Campus × Curso × Turno</CardTitle>
                 <p className="text-xs text-gray-400">{data?.visaoConsolidada?.pag?.registros?.toLocaleString('pt-BR') || 0} combinações encontradas</p>
               </div>
               <span className="text-xs text-gray-400">Pág. {data?.visaoConsolidada?.pag?.atual || 1} de {data?.visaoConsolidada?.pag?.total || 1}</span>
@@ -238,12 +245,12 @@ export default function Dashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead><tr className="border-b bg-gray-50">
+                    <th className="text-left p-2 font-medium">Campus/Polo</th>
                     <th className="text-left p-2 font-medium">Curso</th>
                     <th className="text-left p-2 font-medium">Turno</th>
-                    <th className="text-left p-2 font-medium">Modelo</th>
                     <th className="text-center p-2 font-medium">Total</th>
-                    <th className="text-center p-2 font-medium bg-green-50">Confirmados</th>
-                    <th className="text-center p-2 font-medium bg-red-50">Não Confirm.</th>
+                    <th className="text-center p-2 font-medium bg-green-50 text-green-700">Confirmado SIM</th>
+                    <th className="text-center p-2 font-medium bg-red-50 text-red-700">Confirmado NÃO</th>
                     <th className="text-center p-2 font-medium">Mat. Fin.</th>
                     <th className="text-center p-2 font-medium">Mat. Acad.</th>
                     <th className="text-center p-2 font-medium">Conversão</th>
@@ -252,15 +259,15 @@ export default function Dashboard() {
                     {loading ? [...Array(10)].map((_, i) => <tr key={i} className="border-b">{[...Array(9)].map((_, j) => <td key={j} className="p-2"><Skeleton className="h-3 w-full" /></td>)}</tr>) 
                     : data?.visaoConsolidada?.dados?.map((r: any, i: number) => (
                       <tr key={i} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium truncate max-w-[200px]" title={r.curso}>{r.curso}</td>
+                        <td className="p-2 truncate max-w-[150px]" title={r.campus}>{r.campus}</td>
+                        <td className="p-2 font-medium truncate max-w-[180px]" title={r.curso}>{r.curso}</td>
                         <td className="p-2">{r.turno}</td>
-                        <td className="p-2">{r.modelo}</td>
                         <td className="p-2 text-center font-bold">{r.total.toLocaleString('pt-BR')}</td>
                         <td className="p-2 text-center bg-green-50">
-                          <Badge className="bg-green-500 text-white text-[10px]">{r.confirmados.toLocaleString('pt-BR')}</Badge>
+                          <Badge className="bg-green-500 text-white text-[10px] font-bold">{r.confirmadosSim.toLocaleString('pt-BR')}</Badge>
                         </td>
                         <td className="p-2 text-center bg-red-50">
-                          <Badge className="bg-red-400 text-white text-[10px]">{r.naoConfirmados.toLocaleString('pt-BR')}</Badge>
+                          <Badge className="bg-red-400 text-white text-[10px] font-bold">{r.confirmadosNao.toLocaleString('pt-BR')}</Badge>
                         </td>
                         <td className="p-2 text-center">{r.matFin.toLocaleString('pt-BR')}</td>
                         <td className="p-2 text-center">{r.matAcad.toLocaleString('pt-BR')}</td>
@@ -300,27 +307,29 @@ export default function Dashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead><tr className="border-b bg-gray-50">
+                  <th className="text-left p-1.5 font-medium">Campus</th>
                   <th className="text-left p-1.5 font-medium">Curso</th>
                   <th className="text-left p-1.5 font-medium">Turno</th>
                   <th className="text-left p-1.5 font-medium">Modelo</th>
                   <th className="text-left p-1.5 font-medium">Fase</th>
-                  <th className="text-left p-1.5 font-medium">Status</th>
+                  <th className="text-center p-1.5 font-medium">Confirmado</th>
                   <th className="text-center p-1.5 font-medium">Fin</th>
                   <th className="text-center p-1.5 font-medium">Acad</th>
                   <th className="text-center p-1.5 font-medium">Doc</th>
                   <th className="text-left p-1.5 font-medium">Data</th>
                 </tr></thead>
                 <tbody>
-                  {loading ? [...Array(5)].map((_, i) => <tr key={i} className="border-b">{[...Array(9)].map((_, j) => <td key={j} className="p-1.5"><Skeleton className="h-3 w-full" /></td>)}</tr>) 
+                  {loading ? [...Array(5)].map((_, i) => <tr key={i} className="border-b">{[...Array(10)].map((_, j) => <td key={j} className="p-1.5"><Skeleton className="h-3 w-full" /></td>)}</tr>) 
                   : data?.tabela?.dados?.map((r: any, i: number) => (
                     <tr key={i} className="border-b hover:bg-gray-50">
+                      <td className="p-1.5 truncate max-w-[100px]" title={r.campus}>{r.campus}</td>
                       <td className="p-1.5 truncate max-w-[150px]" title={r.curso}>{r.curso}</td>
                       <td className="p-1.5">{r.turno}</td>
                       <td className="p-1.5">{r.modelo}</td>
                       <td className="p-1.5"><Badge variant="outline" className="text-[10px]">{r.fase?.slice(0, 12)}</Badge></td>
-                      <td className="p-1.5">
-                        <Badge className={r.status === 'Confirmado' ? 'bg-green-500 text-white text-[10px]' : 'text-[10px]'} variant={r.status === 'Confirmado' ? 'default' : 'secondary'}>
-                          {r.status}
+                      <td className="p-1.5 text-center">
+                        <Badge className={r.confirmado === 'SIM' ? 'bg-green-500 text-white text-[10px] font-bold' : 'bg-red-400 text-white text-[10px] font-bold'}>
+                          {r.confirmado}
                         </Badge>
                       </td>
                       <td className="p-1.5 text-center"><Badge className={r.fin === 'Sim' ? 'bg-green-500 text-white text-[10px]' : 'text-[10px]'} variant={r.fin === 'Sim' ? 'default' : 'secondary'}>{r.fin}</Badge></td>
