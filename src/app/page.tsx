@@ -10,23 +10,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const GREEN = '#22c55e'
-const RED = '#ef4444'
+// Paleta de cores Estácio
+const COLORS = {
+  green: '#2ecc71',
+  red: '#e74c3c',
+  purple: '#9b59b6',
+  yellow: '#f1c40f',
+  orange: '#e67e22',
+  blue: '#3498db',
+  grayDark: '#333333',
+  grayMedium: '#666666',
+  grayLight: '#f5f5f5',
+  white: '#ffffff'
+}
 
 function KPICard({ titulo, valor, subtitulo, icon: Icon, color, bgColor }: { 
   titulo: string; valor: string | number; subtitulo?: string; icon?: React.ElementType; color: string; bgColor: string 
 }) {
   return (
-    <Card className="shadow-md border-0">
+    <Card className="shadow-md border-0" style={{ backgroundColor: COLORS.white }}>
       <CardContent className="pt-5 pb-5 px-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">{titulo}</p>
+            <p className="text-sm font-medium mb-1" style={{ color: COLORS.grayMedium }}>{titulo}</p>
             <p className="text-3xl font-bold" style={{ color }}>{typeof valor === 'number' ? valor.toLocaleString('pt-BR') : valor}</p>
-            {subtitulo && <p className="text-xs text-gray-400 mt-1">{subtitulo}</p>}
+            {subtitulo && <p className="text-xs mt-1" style={{ color: COLORS.grayMedium }}>{subtitulo}</p>}
           </div>
           {Icon && (
-            <div className={`${bgColor} p-3 rounded-xl`}>
+            <div className="p-3 rounded-xl" style={{ backgroundColor: bgColor }}>
               <Icon className="w-5 h-5 text-white" />
             </div>
           )}
@@ -40,9 +51,9 @@ function ChartCard({ title, data, dataKey, color }: {
   title: string; data: any[]; dataKey: string; color: string
 }) {
   return (
-    <Card className="shadow-md border-0">
+    <Card className="shadow-md border-0" style={{ backgroundColor: COLORS.white }}>
       <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-sm font-semibold text-gray-700">{title}</CardTitle>
+        <CardTitle className="text-sm font-semibold" style={{ color: COLORS.grayDark }}>{title}</CardTitle>
       </CardHeader>
       <CardContent className="pb-4 px-4">
         <div className="h-48">
@@ -108,10 +119,10 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-sm w-full shadow-lg"><CardContent className="flex flex-col items-center py-10">
-          <RefreshCw className="w-12 h-12 text-red-400 mb-4" />
-          <p className="text-gray-600 mb-4">{error}</p>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: COLORS.grayLight }}>
+        <Card className="max-w-sm w-full shadow-lg" style={{ backgroundColor: COLORS.white }}><CardContent className="flex flex-col items-center py-10">
+          <RefreshCw className="w-12 h-12 mb-4" style={{ color: COLORS.red }} />
+          <p className="mb-4" style={{ color: COLORS.grayMedium }}>{error}</p>
           <Button onClick={() => location.reload()}>Tentar novamente</Button>
         </CardContent></Card>
       </div>
@@ -119,12 +130,12 @@ export default function Dashboard() {
   }
 
   const confirmacaoData = [
-    { nome: 'Confirmadas', valor: data?.graficos?.percentualConfirmacao?.confirmadas || 0, fill: GREEN },
-    { nome: 'Não Confirmadas', valor: data?.graficos?.percentualConfirmacao?.naoConfirmadas || 0, fill: RED }
+    { nome: 'Confirmadas', valor: data?.graficos?.percentualConfirmacao?.confirmadas || 0, fill: COLORS.green },
+    { nome: 'Não Confirmadas', valor: data?.graficos?.percentualConfirmacao?.naoConfirmadas || 0, fill: COLORS.red }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6" style={{ backgroundColor: COLORS.grayLight }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center gap-4">
@@ -135,17 +146,17 @@ export default function Dashboard() {
             style={{ maxHeight: '56px', width: 'auto' }}
           />
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard - Acompanhamento de cursos</h1>
-            <p className="text-gray-500 text-sm">Período 2026.1</p>
+            <h1 className="text-xl md:text-2xl font-bold" style={{ color: COLORS.grayDark }}>Dashboard - Acompanhamento de cursos</h1>
+            <p className="text-sm" style={{ color: COLORS.grayMedium }}>Período 2026.1</p>
           </div>
         </div>
 
         {/* Filtros */}
-        <Card className="shadow-md border-0 mb-6">
+        <Card className="shadow-md border-0 mb-6" style={{ backgroundColor: COLORS.white }}>
           <CardContent className="pt-4 pb-4">
             <div className="flex flex-wrap gap-3 items-center">
               <div className="relative flex-1 min-w-[180px] max-w-[280px]">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-2.5 w-4 h-4" style={{ color: COLORS.grayMedium }} />
                 <Input placeholder="Buscar curso, modelo, turno..." className="pl-9 h-10" onChange={e => setF('busca', e.target.value)} />
               </div>
               <Select value={filtros.campus} onValueChange={v => setF('campus', v)}>
@@ -180,54 +191,54 @@ export default function Dashboard() {
               titulo="Total Oportunidades" 
               valor={data?.kpis?.totalOportunidades || 0} 
               icon={Users} 
-              color="#3b82f6" 
-              bgColor="bg-blue-500" 
+              color={COLORS.blue} 
+              bgColor={COLORS.blue} 
             />
             <KPICard 
               titulo="Matrículas Financeiras" 
               valor={data?.kpis?.totalMatFin || 0}
               subtitulo="Pagamentos confirmados"
               icon={DollarSign} 
-              color="#22c55e" 
-              bgColor="bg-green-500" 
+              color={COLORS.green} 
+              bgColor={COLORS.green} 
             />
             <KPICard 
               titulo="Matrículas Acadêmicas" 
               valor={data?.kpis?.totalMatAcad || 0}
               subtitulo="Finalizadas"
               icon={GraduationCap} 
-              color="#14b8a6" 
-              bgColor="bg-teal-500" 
+              color={COLORS.purple} 
+              bgColor={COLORS.purple} 
             />
             <KPICard 
               titulo="Total de Turmas" 
               valor={data?.kpis?.totalTurmas || 0}
               icon={BookOpen} 
-              color="#8b5cf6" 
-              bgColor="bg-violet-500" 
+              color={COLORS.orange} 
+              bgColor={COLORS.orange} 
             />
             <KPICard 
               titulo="Turmas Confirmadas" 
               valor={data?.kpis?.turmasConfirmadas || 0}
               subtitulo={`${data?.kpis?.percentualConfirmacao}%`}
               icon={CheckCircle} 
-              color="#22c55e" 
-              bgColor="bg-green-500" 
+              color={COLORS.green} 
+              bgColor={COLORS.green} 
             />
             <KPICard 
               titulo="Turmas Não Confirmadas" 
               valor={data?.kpis?.turmasNaoConfirmadas || 0}
               icon={XCircle} 
-              color="#ef4444" 
-              bgColor="bg-red-500" 
+              color={COLORS.red} 
+              bgColor={COLORS.red} 
             />
           </div>
         )}
 
         {/* Seção: Visão Geral */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-500" />
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: COLORS.grayDark }}>
+            <BookOpen className="w-5 h-5" style={{ color: COLORS.purple }} />
             Visão Geral
           </h2>
           
@@ -238,9 +249,9 @@ export default function Dashboard() {
           ) : (
             <div className="grid md:grid-cols-3 gap-4">
               {/* Percentual de Confirmação */}
-              <Card className="shadow-md border-0">
+              <Card className="shadow-md border-0" style={{ backgroundColor: COLORS.white }}>
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm font-semibold text-gray-700">Percentual de Confirmação de Turmas</CardTitle>
+                  <CardTitle className="text-sm font-semibold" style={{ color: COLORS.grayDark }}>Percentual de Confirmação de Turmas</CardTitle>
                 </CardHeader>
                 <CardContent className="pb-4 px-4">
                   <div className="h-48 flex items-center justify-center">
@@ -265,12 +276,12 @@ export default function Dashboard() {
                   </div>
                   <div className="flex justify-center gap-6 mt-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="text-xs text-gray-600">Confirmadas ({data?.kpis?.percentualConfirmacao}%)</span>
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.green }}></div>
+                      <span className="text-xs" style={{ color: COLORS.grayMedium }}>Confirmadas ({data?.kpis?.percentualConfirmacao}%)</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <span className="text-xs text-gray-600">Não Confirmadas</span>
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.red }}></div>
+                      <span className="text-xs" style={{ color: COLORS.grayMedium }}>Não Confirmadas</span>
                     </div>
                   </div>
                 </CardContent>
@@ -281,7 +292,7 @@ export default function Dashboard() {
                 title="Top 5 Cursos - Mat. Financeira" 
                 data={data?.graficos?.top5MatFin} 
                 dataKey="matFin" 
-                color="#22c55e" 
+                color={COLORS.green} 
               />
 
               {/* Bottom 5 MAT FIN */}
@@ -289,7 +300,7 @@ export default function Dashboard() {
                 title="Bottom 5 Cursos - Mat. Financeira" 
                 data={data?.graficos?.bottom5MatFin} 
                 dataKey="matFin" 
-                color="#f59e0b" 
+                color={COLORS.orange} 
               />
             </div>
           )}
@@ -297,24 +308,24 @@ export default function Dashboard() {
 
         {/* Seção: Todas as Turmas */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-violet-500" />
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: COLORS.grayDark }}>
+            <BookOpen className="w-5 h-5" style={{ color: COLORS.purple }} />
             Todas as Turmas
             <Badge variant="secondary" className="ml-2">{data?.turmas?.paginacao?.registros?.toLocaleString('pt-BR') || 0} turmas</Badge>
           </h2>
 
-          <Card className="shadow-md border-0">
+          <Card className="shadow-md border-0" style={{ backgroundColor: COLORS.white }}>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gray-100 border-b">
-                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Curso</th>
-                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Modelo de Ensino</th>
-                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Turno</th>
-                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">MAT FIN</th>
-                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">MAT ACAD</th>
-                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <tr className="border-b" style={{ backgroundColor: COLORS.grayLight }}>
+                      <th className="text-left p-3 text-xs font-semibold uppercase tracking-wider" style={{ color: COLORS.grayMedium }}>Curso</th>
+                      <th className="text-left p-3 text-xs font-semibold uppercase tracking-wider" style={{ color: COLORS.grayMedium }}>Modelo de Ensino</th>
+                      <th className="text-left p-3 text-xs font-semibold uppercase tracking-wider" style={{ color: COLORS.grayMedium }}>Turno</th>
+                      <th className="text-center p-3 text-xs font-semibold uppercase tracking-wider" style={{ color: COLORS.grayMedium }}>MAT FIN</th>
+                      <th className="text-center p-3 text-xs font-semibold uppercase tracking-wider" style={{ color: COLORS.grayMedium }}>MAT ACAD</th>
+                      <th className="text-center p-3 text-xs font-semibold uppercase tracking-wider" style={{ color: COLORS.grayMedium }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -323,23 +334,24 @@ export default function Dashboard() {
                         <tr key={i} className="border-b"><td colSpan={6} className="p-3"><Skeleton className="h-4 w-full" /></td></tr>
                       ))
                     ) : data?.turmas?.dados?.map((t: any, i: number) => (
-                      <tr key={i} className={`border-b hover:bg-gray-50 transition-colors ${t.status === 'Não Confirmado' ? 'bg-red-50/50' : ''}`}>
+                      <tr key={i} className={`border-b hover:bg-gray-50 transition-colors`} style={{ backgroundColor: t.status === 'Não Confirmado' ? '#fef2f2' : COLORS.white }}>
                         <td className="p-3">
-                          <span className="font-medium text-gray-800 text-sm" title={t.curso}>
+                          <span className="font-medium text-sm" style={{ color: COLORS.grayDark }} title={t.curso}>
                             {t.curso.length > 35 ? `${t.curso.slice(0, 35)}...` : t.curso}
                           </span>
                         </td>
-                        <td className="p-3 text-sm text-gray-600">{t.modelo}</td>
-                        <td className="p-3 text-sm text-gray-600">{t.turno}</td>
+                        <td className="p-3 text-sm" style={{ color: COLORS.grayMedium }}>{t.modelo}</td>
+                        <td className="p-3 text-sm" style={{ color: COLORS.grayMedium }}>{t.turno}</td>
                         <td className="p-3 text-center">
-                          <span className="font-semibold text-green-600">{t.matFin}</span>
+                          <span className="font-semibold" style={{ color: COLORS.green }}>{t.matFin}</span>
                         </td>
                         <td className="p-3 text-center">
-                          <span className="font-semibold text-teal-600">{t.matAcad}</span>
+                          <span className="font-semibold" style={{ color: COLORS.purple }}>{t.matAcad}</span>
                         </td>
                         <td className="p-3 text-center">
                           <Badge 
-                            className={`${t.status === 'Confirmado' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white font-medium px-3 py-1`}
+                            className="text-white font-medium px-3 py-1"
+                            style={{ backgroundColor: t.status === 'Confirmado' ? COLORS.green : COLORS.red }}
                           >
                             {t.status === 'Confirmado' ? 'SIM' : 'NÃO'}
                           </Badge>
@@ -351,8 +363,8 @@ export default function Dashboard() {
               </div>
               
               {/* Paginação */}
-              <div className="flex justify-between items-center p-4 border-t bg-gray-50">
-                <span className="text-sm text-gray-500">
+              <div className="flex justify-between items-center p-4 border-t" style={{ backgroundColor: COLORS.grayLight }}>
+                <span className="text-sm" style={{ color: COLORS.grayMedium }}>
                   Mostrando {((data?.turmas?.paginacao?.atual || 1) - 1) * 20 + 1} - {Math.min((data?.turmas?.paginacao?.atual || 1) * 20, data?.turmas?.paginacao?.registros || 0)} de {data?.turmas?.paginacao?.registros?.toLocaleString('pt-BR') || 0}
                 </span>
                 <div className="flex gap-2">
@@ -364,7 +376,7 @@ export default function Dashboard() {
                   >
                     Anterior
                   </Button>
-                  <span className="flex items-center px-3 text-sm text-gray-600">
+                  <span className="flex items-center px-3 text-sm" style={{ color: COLORS.grayMedium }}>
                     Página {data?.turmas?.paginacao?.atual || 1} de {data?.turmas?.paginacao?.total || 1}
                   </span>
                   <Button 
@@ -382,7 +394,7 @@ export default function Dashboard() {
         </div>
 
         {/* Footer */}
-        <div className="mt-6 text-center text-xs text-gray-400">
+        <div className="mt-6 text-center text-xs" style={{ color: COLORS.grayMedium }}>
           Dashboard - Acompanhamento de cursos • Atualizado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
         </div>
       </div>

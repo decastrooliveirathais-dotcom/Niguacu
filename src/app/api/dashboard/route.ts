@@ -11,6 +11,43 @@ const RAW_DATA = (() => {
   return JSON.parse(content.replace(/:\s*NaN\s*([,}])/g, ': null$1'))
 })()
 
+// Cursos de GRADUAÇÃO e GRADUAÇÃO TECNOLÓGICA (exclui MBAs, pós-graduações, cursos livres)
+const CURSOS_PERMITIDOS = new Set([
+  // GRADUAÇÃO - BACHARELADO
+  'ADMINISTRAÇÃO', 'ARQUITETURA E URBANISMO', 'ARTES VISUAIS', 'BIBLIOTECONOMIA',
+  'BIOMEDICINA', 'CIÊNCIA DA COMPUTAÇÃO', 'CIÊNCIAS BIOLÓGICAS - BACHARELADO',
+  'CIÊNCIAS CONTÁBEIS', 'CIÊNCIAS DA NATUREZA', 'CIÊNCIAS ECONÔMICAS', 'CIÊNCIAS POLÍTICAS',
+  'COMUNICAÇÃO INSTITUCIONAL', 'DIREITO', 'EDUCAÇÃO FÍSICA - BACHARELADO',
+  'ENFERMAGEM', 'ENGENHARIA CIVIL', 'ENGENHARIA DE COMPUTAÇÃO', 'ENGENHARIA DE PRODUÇÃO',
+  'ENGENHARIA DE SEGURANÇA DO TRABALHO', 'ENGENHARIA DE SOFTWARE', 'ENGENHARIA ELÉTRICA',
+  'ENGENHARIA MECÂNICA', 'ESTÉTICA E COSMÉTICA', 'FARMÁCIA', 'FISIOTERAPIA',
+  'FOTOGRAFIA', 'GASTRONOMIA', 'GEOGRAFIA - BACHARELADO', 'HISTÓRIA - BACHARELADO',
+  'JORNALISMO', 'LETRAS - LÍNGUA PORTUGUESA - BACHARELADO', 'MATEMÁTICA - BACHARELADO',
+  'MEDICINA VETERINÁRIA', 'NUTRIÇÃO', 'ODONTOLOGIA', 'PSICOLOGIA',
+  'PUBLICIDADE E PROPAGANDA', 'RADIOLOGIA', 'RELAÇÕES INTERNACIONAIS',
+  'SECRETARIADO EXECUTIVO', 'SERVIÇO SOCIAL', 'SISTEMAS DE INFORMAÇÃO',
+  'TEOLOGIA - BACHARELADO', 'TERAPIA OCUPACIONAL',
+  
+  // GRADUAÇÃO - LICENCIATURA
+  'CIÊNCIAS BIOLÓGICAS - LICENCIATURA', 'EDUCAÇÃO FÍSICA - LICENCIATURA',
+  'FILOSOFIA - LICENCIATURA', 'GEOGRAFIA - LICENCIATURA', 'HISTÓRIA - LICENCIATURA',
+  'LETRAS - ESPANHOL', 'LETRAS - INGLÊS', 'LETRAS - LÍNGUA PORTUGUESA - LICENCIATURA',
+  'MATEMÁTICA - LICENCIATURA', 'PEDAGOGIA', 'QUÍMICA - LICENCIATURA',
+  
+  // GRADUAÇÃO TECNOLÓGICA
+  'ANÁLISE E DESENVOLVIMENTO DE SISTEMAS', 'AUTOMAÇÃO INDUSTRIAL', 'BANCO DE DADOS',
+  'CIÊNCIA DE DADOS', 'COMÉRCIO EXTERIOR', 'DEFESA CIBERNÉTICA', 'DESIGN DE INTERIORES',
+  'DESIGN DE MODA', 'DESIGN GRÁFICO', 'DESENVOLVIMENTO FULL STACK', 'DEVOPS',
+  'GESTÃO AMBIENTAL', 'GESTÃO COMERCIAL', 'GESTÃO DA PRODUÇÃO INDUSTRIAL',
+  'GESTÃO DA QUALIDADE', 'GESTÃO DA TECNOLOGIA DA INFORMAÇÃO', 'GESTÃO DE CONDOMÍNIOS',
+  'GESTÃO DE MÍDIAS DIGITAIS', 'GESTÃO DE MÍDIAS SOCIAIS', 'GESTÃO DE RECURSOS HUMANOS',
+  'GESTÃO DE SEGURANÇA PRIVADA', 'GESTÃO DE TURISMO', 'GESTÃO DESPORTIVA E DE LAZER',
+  'GESTÃO FINANCEIRA', 'GESTÃO PÚBLICA', 'JOGOS DIGITAIS', 'LOGÍSTICA',
+  'MARKETING', 'MARKETING DIGITAL', 'NEGÓCIOS IMOBILIÁRIOS', 'PROCESSOS GERENCIAIS',
+  'PRODUÇÃO DE CONTEÚDO DIGITAL', 'REDES DE COMPUTADORES', 'SEGURANÇA NO TRABALHO',
+  'SEGURANÇA PÚBLICA'
+])
+
 // Carregar lista de turmas não confirmadas
 const TURMAS_NAO_CONFIRMADAS = (() => {
   try {
@@ -27,13 +64,19 @@ const TURMAS_NAO_CONFIRMADAS = (() => {
   }
 })()
 
-// Pré-calcular filtros únicos
+// Filtrar dados para apenas cursos permitidos
+const DADOS_FILTRADOS = RAW_DATA.filter((item: any) => {
+  const curso = (item.Curso || '').toUpperCase().trim()
+  return CURSOS_PERMITIDOS.has(curso)
+})
+
+// Pré-calcular filtros únicos (apenas cursos permitidos)
 const FILTROS = (() => {
   const cursos = new Set<string>()
   const turnos = new Set<string>()
   const modelos = new Set<string>()
   const campus = new Set<string>()
-  for (const item of RAW_DATA) {
+  for (const item of DADOS_FILTRADOS) {
     if (item.Curso) cursos.add(item.Curso)
     if (item.Turno) turnos.add(item.Turno)
     if (item['Modelo de Ensino']) modelos.add(item['Modelo de Ensino'])
@@ -73,7 +116,8 @@ export async function GET(request: Request) {
   const busca = searchParams.get('busca')?.toLowerCase()
   const pagina = parseInt(searchParams.get('pagina') || '1')
   
-  const dados = RAW_DATA.filter((item: Item) => {
+  // Filtrar dados (já filtrados por cursos permitidos)
+  const dados = DADOS_FILTRADOS.filter((item: Item) => {
     if (cursoFiltro && cursoFiltro !== 'todos' && item.Curso !== cursoFiltro) return false
     if (turnoFiltro && turnoFiltro !== 'todos' && item.Turno !== turnoFiltro) return false
     if (modeloFiltro && modeloFiltro !== 'todos' && item['Modelo de Ensino'] !== modeloFiltro) return false
@@ -124,7 +168,7 @@ export async function GET(request: Request) {
   const turmasNaoConfirmadas = turmasArray.filter(t => t.status === 'Não Confirmado').length
   const percentualConfirmacao = totalTurmas > 0 ? ((turmasConfirmadas / totalTurmas) * 100).toFixed(1) : '0'
 
-  // Dados por curso para rankings (apenas MAT FIN)
+  // Dados por curso para rankings
   const cursosData: Record<string, { matFin: number; total: number }> = {}
   for (const item of dados) {
     const curso = item.Curso || 'N/I'
