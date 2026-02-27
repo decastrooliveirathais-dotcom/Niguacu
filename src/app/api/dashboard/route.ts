@@ -16,7 +16,6 @@ const TURMAS_NAO_CONFIRMADAS = (() => {
   try {
     const content = fs.readFileSync(NAO_CONFIRMADOS_PATH, 'utf-8')
     const lista = JSON.parse(content)
-    // Criar Set com chaves normalizadas para busca rápida
     const set = new Set<string>()
     for (const t of lista) {
       const key = `${(t.curso || '').toUpperCase().trim()}|${(t.turno || '').toUpperCase().trim()}|${(t.campus || '').toUpperCase().trim()}`
@@ -27,9 +26,6 @@ const TURMAS_NAO_CONFIRMADAS = (() => {
     return new Set<string>()
   }
 })()
-
-// PE = Pontos de Equilíbrio (meta de matrículas por curso)
-const PE_POR_CURSO = 15
 
 // Pré-calcular filtros únicos
 const FILTROS = (() => {
@@ -62,7 +58,6 @@ type Item = {
   'Documentação Obrigatória Entregue': number
 }
 
-// Função para verificar se turma está na lista de não confirmados
 function isNaoConfirmada(curso: string, turno: string, campus: string): boolean {
   const key = `${(curso || '').toUpperCase().trim()}|${(turno || '').toUpperCase().trim()}|${(campus || '').toUpperCase().trim()}`
   return TURMAS_NAO_CONFIRMADAS.has(key)
@@ -71,7 +66,6 @@ function isNaoConfirmada(curso: string, turno: string, campus: string): boolean 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   
-  // Filtros
   const cursoFiltro = searchParams.get('curso')
   const turnoFiltro = searchParams.get('turno')
   const modeloFiltro = searchParams.get('modelo')
@@ -79,7 +73,6 @@ export async function GET(request: Request) {
   const busca = searchParams.get('busca')?.toLowerCase()
   const pagina = parseInt(searchParams.get('pagina') || '1')
   
-  // Filtrar dados
   const dados = RAW_DATA.filter((item: Item) => {
     if (cursoFiltro && cursoFiltro !== 'todos' && item.Curso !== cursoFiltro) return false
     if (turnoFiltro && turnoFiltro !== 'todos' && item.Turno !== turnoFiltro) return false
@@ -93,7 +86,7 @@ export async function GET(request: Request) {
   const turmas: Record<string, {
     curso: string; modelo: string; turno: string; campus: string
     total: number; matFin: number; matAcad: number
-    pe: number; status: 'Confirmado' | 'Não Confirmado'
+    status: 'Confirmado' | 'Não Confirmado'
   }> = {}
 
   for (const item of dados) {
@@ -108,7 +101,6 @@ export async function GET(request: Request) {
       turmas[key] = {
         curso, modelo, turno, campus,
         total: 0, matFin: 0, matAcad: 0,
-        pe: PE_POR_CURSO,
         status: 'Confirmado'
       }
     }
@@ -118,13 +110,12 @@ export async function GET(request: Request) {
     if (item['Flag Matrícula Acadêmica'] === 1) turmas[key].matAcad++
   }
 
-  // Calcular status baseado na lista de não confirmados
   const turmasArray = Object.values(turmas).map(t => ({
     ...t,
     status: isNaoConfirmada(t.curso, t.turno, t.campus) ? 'Não Confirmado' as const : 'Confirmado' as const
   }))
 
-  // KPIs gerais
+  // KPIs
   const totalOportunidades = dados.length
   const totalMatFin = dados.filter(i => i['Flag Matrícula Financeira'] === 1).length
   const totalMatAcad = dados.filter(i => i['Flag Matrícula Acadêmica'] === 1).length
@@ -133,31 +124,24 @@ export async function GET(request: Request) {
   const turmasNaoConfirmadas = turmasArray.filter(t => t.status === 'Não Confirmado').length
   const percentualConfirmacao = totalTurmas > 0 ? ((turmasConfirmadas / totalTurmas) * 100).toFixed(1) : '0'
 
-  // Dados por curso para rankings
-  const cursosData: Record<string, { matFin: number; matAcad: number; total: number }> = {}
+  // Dados por curso para rankings (apenas MAT FIN)
+  const cursosData: Record<string, { matFin: number; total: number }> = {}
   for (const item of dados) {
     const curso = item.Curso || 'N/I'
-    if (!cursosData[curso]) cursosData[curso] = { matFin: 0, matAcad: 0, total: 0 }
+    if (!cursosData[curso]) cursosData[curso] = { matFin: 0, total: 0 }
     cursosData[curso].total++
     if (item['Flag Matrícula Financeira'] === 1) cursosData[curso].matFin++
-    if (item['Flag Matrícula Acadêmica'] === 1) cursosData[curso].matAcad++
   }
 
-  // Rankings
   const cursosArray = Object.entries(cursosData).map(([nome, data]) => ({
     nome, ...data
   }))
 
-  // Top 5 por MAT FIN
+  // Top 5 e Bottom 5 por MAT FIN
   const top5MatFin = [...cursosArray].sort((a, b) => b.matFin - a.matFin).slice(0, 5)
-  // Bottom 5 por MAT FIN
   const bottom5MatFin = [...cursosArray].filter(c => c.matFin > 0).sort((a, b) => a.matFin - b.matFin).slice(0, 5)
-  // Top 5 por MAT ACAD
-  const top5MatAcad = [...cursosArray].sort((a, b) => b.matAcad - a.matAcad).slice(0, 5)
-  // Bottom 5 por MAT ACAD
-  const bottom5MatAcad = [...cursosArray].filter(c => c.matAcad > 0).sort((a, b) => a.matAcad - b.matAcad).slice(0, 5)
 
-  // Ordenar turmas por status (Não Confirmados primeiro) e depois por matAcad
+  // Ordenar turmas: Não Confirmados primeiro
   const turmasOrdenadas = [...turmasArray].sort((a, b) => {
     if (a.status === 'Não Confirmado' && b.status !== 'Não Confirmado') return -1
     if (a.status !== 'Não Confirmado' && b.status === 'Não Confirmado') return 1
@@ -183,8 +167,6 @@ export async function GET(request: Request) {
     graficos: {
       top5MatFin,
       bottom5MatFin,
-      top5MatAcad,
-      bottom5MatAcad,
       percentualConfirmacao: {
         confirmadas: turmasConfirmadas,
         naoConfirmadas: turmasNaoConfirmadas
