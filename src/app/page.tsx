@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
-import { Users, GraduationCap, FileCheck, FileText, TrendingUp, Search, RefreshCw, CheckCircle, XCircle, LayoutGrid, Table, MapPin } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { Users, GraduationCap, DollarSign, TrendingUp, TrendingDown, CheckCircle, XCircle, Search, RefreshCw, BookOpen } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,18 +10,56 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+const GREEN = '#22c55e'
+const RED = '#ef4444'
 
-function KPI({ titulo, valor, desc, icon: Icon, color }: { titulo: string; valor: string | number; desc: string; icon: React.ElementType; color: string }) {
+function KPICard({ titulo, valor, subtitulo, icon: Icon, color, bgColor }: { 
+  titulo: string; valor: string | number; subtitulo?: string; icon?: React.ElementType; color: string; bgColor: string 
+}) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-4">
-        <CardTitle className="text-xs font-medium text-gray-500">{titulo}</CardTitle>
-        <div className={`p-1.5 rounded ${color}`}><Icon className="w-3.5 h-3.5 text-white" /></div>
+    <Card className="shadow-md border-0">
+      <CardContent className="pt-5 pb-5 px-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500 mb-1">{titulo}</p>
+            <p className="text-3xl font-bold" style={{ color }}>{typeof valor === 'number' ? valor.toLocaleString('pt-BR') : valor}</p>
+            {subtitulo && <p className="text-xs text-gray-400 mt-1">{subtitulo}</p>}
+          </div>
+          {Icon && (
+            <div className={`${bgColor} p-3 rounded-xl`}>
+              <Icon className="w-5 h-5 text-white" />
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ChartCard({ title, data, dataKey, color, descending }: { 
+  title: string; data: any[]; dataKey: string; color: string; descending?: boolean 
+}) {
+  return (
+    <Card className="shadow-md border-0">
+      <CardHeader className="pb-2 pt-4 px-4">
+        <CardTitle className="text-sm font-semibold text-gray-700">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-1 pb-3 px-4">
-        <div className="text-xl font-bold">{typeof valor === 'number' ? valor.toLocaleString('pt-BR') : valor}</div>
-        <p className="text-[10px] text-gray-400">{desc}</p>
+      <CardContent className="pb-4 px-4">
+        <div className="h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis type="number" fontSize={11} tickLine={false} />
+              <YAxis type="category" dataKey="nome" width={120} fontSize={10} tickFormatter={(v) => v.length > 18 ? `${v.slice(0, 18)}...` : v} tickLine={false} />
+              <Tooltip 
+                formatter={(v: number) => v.toLocaleString('pt-BR')}
+                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              />
+              <Bar dataKey={dataKey} fill={color} radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   )
@@ -30,10 +68,8 @@ function KPI({ titulo, valor, desc, icon: Icon, color }: { titulo: string; valor
 export default function Dashboard() {
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const [filtros, setFiltros] = useState({ campus: 'todos', curso: 'todos', turno: 'todos', fase: 'todos', modelo: 'todos', flagFin: 'todos', flagDoc: 'todos', flagAcad: 'todos', busca: '' })
+  const [filtros, setFiltros] = useState({ campus: 'todos', curso: 'todos', turno: 'todos', modelo: 'todos', busca: '' })
   const [pagina, setPagina] = useState(1)
-  const [paginaVisao, setPaginaVisao] = useState(1)
-  const [abaAtiva, setAbaAtiva] = useState<'graficos' | 'visao'>('graficos')
   const loadingRef = useRef(true)
   const [, update] = useState({})
   const loading = loadingRef.current || !data
@@ -46,14 +82,9 @@ export default function Dashboard() {
     if (filtros.campus !== 'todos') p.set('campus', filtros.campus)
     if (filtros.curso !== 'todos') p.set('curso', filtros.curso)
     if (filtros.turno !== 'todos') p.set('turno', filtros.turno)
-    if (filtros.fase !== 'todos') p.set('fase', filtros.fase)
     if (filtros.modelo !== 'todos') p.set('modelo', filtros.modelo)
-    if (filtros.flagFin !== 'todos') p.set('flagFinanceira', filtros.flagFin)
-    if (filtros.flagDoc !== 'todos') p.set('flagDocumentacao', filtros.flagDoc)
-    if (filtros.flagAcad !== 'todos') p.set('flagAcademica', filtros.flagAcad)
     if (filtros.busca) p.set('busca', filtros.busca)
     p.set('pagina', String(pagina))
-    p.set('paginaVisao', String(paginaVisao))
 
     try {
       const res = await fetch(`/api/dashboard?${p}`, { signal })
@@ -65,7 +96,7 @@ export default function Dashboard() {
       loadingRef.current = false
       update({})
     }
-  }, [filtros, pagina, paginaVisao])
+  }, [filtros, pagina])
 
   useEffect(() => {
     const c = new AbortController()
@@ -73,207 +104,283 @@ export default function Dashboard() {
     return () => c.abort()
   }, [fetcher])
 
-  const setF = (k: string, v: string) => { 
-    setFiltros(p => ({ ...p, [k]: v })); 
-    setPagina(1); 
-    setPaginaVisao(1) 
-  }
-  const clear = () => { 
-    setFiltros({ campus: 'todos', curso: 'todos', turno: 'todos', fase: 'todos', modelo: 'todos', flagFin: 'todos', flagDoc: 'todos', flagAcad: 'todos', busca: '' }); 
-    setPagina(1); 
-    setPaginaVisao(1) 
-  }
+  const setF = (k: string, v: string) => { setFiltros(p => ({ ...p, [k]: v })); setPagina(1) }
+  const clear = () => { setFiltros({ campus: 'todos', curso: 'todos', turno: 'todos', modelo: 'todos', busca: '' }); setPagina(1) }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <Card className="max-w-sm w-full"><CardContent className="flex flex-col items-center py-8">
-          <FileText className="w-10 h-10 text-red-400 mb-3" />
-          <p className="text-gray-500 mb-4">{error}</p>
-          <Button size="sm" onClick={() => location.reload()}><RefreshCw className="w-4 h-4 mr-2" />Tentar novamente</Button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-sm w-full shadow-lg"><CardContent className="flex flex-col items-center py-10">
+          <RefreshCw className="w-12 h-12 text-red-400 mb-4" />
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={() => location.reload()}>Tentar novamente</Button>
         </CardContent></Card>
       </div>
     )
   }
 
+  const confirmacaoData = [
+    { nome: 'Confirmadas', valor: data?.graficos?.percentualConfirmacao?.confirmadas || 0, fill: GREEN },
+    { nome: 'Não Confirmadas', valor: data?.graficos?.percentualConfirmacao?.naoConfirmadas || 0, fill: RED }
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-100 p-3 md:p-4">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard de Resultados Educacionais</h1>
-          <p className="text-sm text-gray-500">Período 2026.1 • {data?.kpis?.total?.toLocaleString('pt-BR') || 0} oportunidades</p>
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Painel de Resultados Educacionais</h1>
+          <p className="text-gray-500 mt-1">Acompanhamento de Matrículas - Período 2026.1</p>
         </div>
 
         {/* Filtros */}
-        <Card className="shadow-sm mb-4">
-          <CardContent className="pt-3 pb-3">
-            <div className="flex flex-wrap gap-2">
-              <div className="relative flex-1 min-w-[150px] max-w-[200px]">
-                <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
-                <Input placeholder="Buscar..." className="pl-8 h-9 text-sm" onChange={e => setF('busca', e.target.value)} />
+        <Card className="shadow-md border-0 mb-6">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="relative flex-1 min-w-[180px] max-w-[280px]">
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                <Input placeholder="Buscar curso, modelo, turno..." className="pl-9 h-10" onChange={e => setF('busca', e.target.value)} />
               </div>
               <Select value={filtros.campus} onValueChange={v => setF('campus', v)}>
-                <SelectTrigger className="w-[140px] h-9 text-sm"><SelectValue placeholder="Campus" /></SelectTrigger>
-                <SelectContent className="max-h-40">{data?.filtros?.campus?.map((c: string) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="w-[150px] h-10"><SelectValue placeholder="Campus" /></SelectTrigger>
+                <SelectContent className="max-h-48">{data?.filtros?.campus?.map((c: string) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={filtros.curso} onValueChange={v => setF('curso', v)}>
-                <SelectTrigger className="w-[160px] h-9 text-sm"><SelectValue placeholder="Curso" /></SelectTrigger>
-                <SelectContent className="max-h-40">{data?.filtros?.cursos?.map((c: string) => <SelectItem key={c} value={c}>{c.length > 20 ? c.slice(0, 20) + '...' : c}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="w-[180px] h-10"><SelectValue placeholder="Curso" /></SelectTrigger>
+                <SelectContent className="max-h-48">{data?.filtros?.cursos?.map((c: string) => <SelectItem key={c} value={c}>{c.length > 25 ? c.slice(0, 25) + '...' : c}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={filtros.turno} onValueChange={v => setF('turno', v)}>
-                <SelectTrigger className="w-[90px] h-9 text-sm"><SelectValue placeholder="Turno" /></SelectTrigger>
+                <SelectTrigger className="w-[100px] h-10"><SelectValue placeholder="Turno" /></SelectTrigger>
                 <SelectContent>{data?.filtros?.turnos?.map((t: string) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={filtros.modelo} onValueChange={v => setF('modelo', v)}>
-                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Modelo" /></SelectTrigger>
+                <SelectTrigger className="w-[130px] h-10"><SelectValue placeholder="Modelo" /></SelectTrigger>
                 <SelectContent>{data?.filtros?.modelos?.map((m: string) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
               </Select>
-              <Select value={filtros.fase} onValueChange={v => setF('fase', v)}>
-                <SelectTrigger className="w-[130px] h-9 text-sm"><SelectValue placeholder="Fase" /></SelectTrigger>
-                <SelectContent>{data?.filtros?.fases?.map((f: string) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
-              </Select>
-              <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={clear}>Limpar</Button>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <Select value={filtros.flagFin} onValueChange={v => setF('flagFin', v)}>
-                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Mat. Fin." /></SelectTrigger>
-                <SelectContent><SelectItem value="todos">Mat. Fin.</SelectItem><SelectItem value="sim">Sim</SelectItem><SelectItem value="nao">Não</SelectItem></SelectContent>
-              </Select>
-              <Select value={filtros.flagDoc} onValueChange={v => setF('flagDoc', v)}>
-                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Document." /></SelectTrigger>
-                <SelectContent><SelectItem value="todos">Document.</SelectItem><SelectItem value="sim">Entregue</SelectItem><SelectItem value="nao">Pendente</SelectItem></SelectContent>
-              </Select>
-              <Select value={filtros.flagAcad} onValueChange={v => setF('flagAcad', v)}>
-                <SelectTrigger className="w-[110px] h-9 text-sm"><SelectValue placeholder="Mat. Acad." /></SelectTrigger>
-                <SelectContent><SelectItem value="todos">Mat. Acad.</SelectItem><SelectItem value="sim">Sim</SelectItem><SelectItem value="nao">Não</SelectItem></SelectContent>
-              </Select>
+              <Button variant="outline" size="sm" className="h-10 px-4" onClick={clear}>Limpar</Button>
             </div>
           </CardContent>
         </Card>
 
         {/* KPIs */}
         {loading && !data ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">{[...Array(7)].map((_, i) => <Card key={i} className="shadow-sm"><CardContent className="py-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            {[...Array(6)].map((_, i) => <Card key={i} className="shadow-md"><CardContent className="py-6"><Skeleton className="h-16 w-full" /></CardContent></Card>)}
+          </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
-            <KPI titulo="Total" valor={data?.kpis?.total || 0} desc="Oportunidades" icon={Users} color="bg-blue-500" />
-            <KPI titulo="Confirmados" valor={data?.kpis?.confirmados || 0} desc={`${data?.kpis?.taxaConfirmacao}% do total`} icon={CheckCircle} color="bg-green-500" />
-            <KPI titulo="Não Confirm." valor={data?.kpis?.naoConfirmados || 0} desc="Aguardando" icon={XCircle} color="bg-red-500" />
-            <KPI titulo="Mat. Financ." valor={data?.kpis?.matFin || 0} desc="Pagamentos" icon={FileCheck} color="bg-emerald-500" />
-            <KPI titulo="Mat. Acadêm." valor={data?.kpis?.matAcad || 0} desc="Finalizadas" icon={GraduationCap} color="bg-teal-500" />
-            <KPI titulo="Documentação" valor={data?.kpis?.docEntregue || 0} desc="Entregues" icon={FileText} color="bg-amber-500" />
-            <KPI titulo="Conversão" valor={`${data?.kpis?.conversao}%`} desc="Taxa" icon={TrendingUp} color="bg-purple-500" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            <KPICard 
+              titulo="Total Oportunidades" 
+              valor={data?.kpis?.totalOportunidades || 0} 
+              icon={Users} 
+              color="#3b82f6" 
+              bgColor="bg-blue-500" 
+            />
+            <KPICard 
+              titulo="Matrículas Financeiras" 
+              valor={data?.kpis?.totalMatFin || 0}
+              subtitulo="Pagamentos confirmados"
+              icon={DollarSign} 
+              color="#22c55e" 
+              bgColor="bg-green-500" 
+            />
+            <KPICard 
+              titulo="Matrículas Acadêmicas" 
+              valor={data?.kpis?.totalMatAcad || 0}
+              subtitulo="Finalizadas"
+              icon={GraduationCap} 
+              color="#14b8a6" 
+              bgColor="bg-teal-500" 
+            />
+            <KPICard 
+              titulo="Total de Turmas" 
+              valor={data?.kpis?.totalTurmas || 0}
+              icon={BookOpen} 
+              color="#8b5cf6" 
+              bgColor="bg-violet-500" 
+            />
+            <KPICard 
+              titulo="Turmas Confirmadas" 
+              valor={data?.kpis?.turmasConfirmadas || 0}
+              subtitulo={`${data?.kpis?.percentualConfirmacao}%`}
+              icon={CheckCircle} 
+              color="#22c55e" 
+              bgColor="bg-green-500" 
+            />
+            <KPICard 
+              titulo="Turmas Não Confirmadas" 
+              valor={data?.kpis?.turmasNaoConfirmadas || 0}
+              icon={XCircle} 
+              color="#ef4444" 
+              bgColor="bg-red-500" 
+            />
           </div>
         )}
 
-        {/* Abas */}
-        <div className="flex gap-2 mb-3">
-          <Button 
-            variant={abaAtiva === 'graficos' ? 'default' : 'outline'} 
-            size="sm" 
-            className="h-8 text-xs"
-            onClick={() => setAbaAtiva('graficos')}
-          >
-            <LayoutGrid className="w-3.5 h-3.5 mr-1" /> Gráficos
-          </Button>
-          <Button 
-            variant={abaAtiva === 'visao' ? 'default' : 'outline'} 
-            size="sm" 
-            className="h-8 text-xs"
-            onClick={() => setAbaAtiva('visao')}
-          >
-            <MapPin className="w-3.5 h-3.5 mr-1" /> Visão Campus/Curso/Turno
-          </Button>
-        </div>
-
-        {/* Conteúdo das Abas */}
-        {abaAtiva === 'graficos' ? (
-          /* Gráficos */
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-            {[
-              { title: 'Por Fase', data: data?.graficos?.fases, type: 'pie' },
-              { title: 'Por Turno', data: data?.graficos?.turnos, type: 'bar' },
-              { title: 'Top 10 Cursos', data: data?.graficos?.top10?.map((d: any) => ({ nome: d.nome, valor: d.quantidade })), type: 'barH' },
-              { title: 'Modelo de Ensino', data: data?.graficos?.modelos, type: 'bar' },
-              { title: 'Status Atendimento', data: data?.graficos?.status, type: 'pie' },
-            ].map((g, i) => (
-              <Card key={i} className="shadow-sm">
-                <CardHeader className="py-2 px-3"><CardTitle className="text-sm">{g.title}</CardTitle></CardHeader>
-                <CardContent className="pb-2 px-3">
-                  <div className="h-40">
-                    {loading ? <Skeleton className="h-full w-full" /> : (
-                      <ResponsiveContainer width="100%" height="100%">
-                        {g.type === 'pie' ? (
-                          <PieChart><Pie data={g.data} cx="50%" cy="50%" innerRadius={30} outerRadius={50} dataKey="valor" nameKey="nome">
-                            {g.data?.map((_: any, j: number) => <Cell key={j} fill={COLORS[j % COLORS.length]} />)}
-                          </Pie><Tooltip formatter={(v: number) => v.toLocaleString('pt-BR')} /></PieChart>
-                        ) : g.type === 'barH' ? (
-                          <BarChart data={g.data} layout="vertical"><CartesianGrid strokeDasharray="3 3" /><XAxis type="number" /><YAxis type="category" dataKey="nome" width={80} fontSize={9} /><Tooltip /><Bar dataKey="valor" fill="#3b82f6" radius={[0, 3, 3, 0]} /></BarChart>
-                        ) : (
-                          <BarChart data={g.data}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="nome" fontSize={9} /><YAxis /><Tooltip /><Bar dataKey="valor" fill="#10b981" radius={[3, 3, 0, 0]} /></BarChart>
-                        )}
-                      </ResponsiveContainer>
-                    )}
+        {/* Seção: Visão Geral */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-blue-500" />
+            Visão Geral
+          </h2>
+          
+          {loading && !data ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(5)].map((_, i) => <Card key={i} className="shadow-md"><CardContent className="py-4"><Skeleton className="h-56 w-full" /></CardContent></Card>)}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Percentual de Confirmação */}
+              <Card className="shadow-md border-0">
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-semibold text-gray-700">Percentual de Confirmação de Turmas</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4 px-4">
+                  <div className="h-48 flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={confirmacaoData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          dataKey="valor"
+                          paddingAngle={2}
+                        >
+                          {confirmacaoData.map((entry, index) => (
+                            <Cell key={index} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR')} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex justify-center gap-6 mt-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="text-xs text-gray-600">Confirmadas ({data?.kpis?.percentualConfirmacao}%)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className="text-xs text-gray-600">Não Confirmadas</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-            
-            {/* Resumo */}
-            <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-green-50">
-              <CardHeader className="py-2 px-3"><CardTitle className="text-sm">Resumo</CardTitle></CardHeader>
-              <CardContent className="pb-3 px-3 text-sm space-y-1.5">
-                <div className="flex justify-between"><span className="text-gray-500">Total filtrado:</span><b>{(data?.kpis?.total || 0).toLocaleString('pt-BR')}</b></div>
-                <div className="flex justify-between"><span className="text-gray-500">Taxa confirmação:</span><Badge className="bg-green-500 text-[10px]">{data?.kpis?.taxaConfirmacao}%</Badge></div>
-                <div className="flex justify-between"><span className="text-gray-500">Taxa conversão:</span><Badge className="bg-purple-500 text-[10px]">{data?.kpis?.conversao}%</Badge></div>
-                <div className="flex justify-between"><span className="text-gray-500">Pendente doc:</span><span className="text-amber-600">{((data?.kpis?.total || 0) - (data?.kpis?.docEntregue || 0)).toLocaleString('pt-BR')}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Aguarda fin.:</span><span className="text-blue-600">{((data?.kpis?.total || 0) - (data?.kpis?.matFin || 0)).toLocaleString('pt-BR')}</span></div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          /* Visão Consolidada - Campus/Curso/Turno */
-          <Card className="shadow-sm mb-4">
-            <CardHeader className="py-2 px-3 flex-row flex justify-between items-center space-y-0">
-              <div>
-                <CardTitle className="text-sm">Visão Consolidada: Campus × Curso × Turno</CardTitle>
-                <p className="text-xs text-gray-400">{data?.visaoConsolidada?.pag?.registros?.toLocaleString('pt-BR') || 0} combinações encontradas</p>
-              </div>
-              <span className="text-xs text-gray-400">Pág. {data?.visaoConsolidada?.pag?.atual || 1} de {data?.visaoConsolidada?.pag?.total || 1}</span>
-            </CardHeader>
-            <CardContent className="px-3 pb-3">
+
+              {/* Top 5 MAT FIN */}
+              <ChartCard 
+                title="Top 5 Cursos - Mat. Financeira" 
+                data={data?.graficos?.top5MatFin} 
+                dataKey="matFin" 
+                color="#22c55e" 
+              />
+
+              {/* Top 5 MAT ACAD */}
+              <ChartCard 
+                title="Top 5 Cursos - Mat. Acadêmica" 
+                data={data?.graficos?.top5MatAcad} 
+                dataKey="matAcad" 
+                color="#14b8a6" 
+              />
+
+              {/* Bottom 5 MAT FIN */}
+              <ChartCard 
+                title="Bottom 5 Cursos - Mat. Financeira" 
+                data={data?.graficos?.bottom5MatFin} 
+                dataKey="matFin" 
+                color="#f59e0b" 
+              />
+
+              {/* Bottom 5 MAT ACAD */}
+              <ChartCard 
+                title="Bottom 5 Cursos - Mat. Acadêmica" 
+                data={data?.graficos?.bottom5MatAcad} 
+                dataKey="matAcad" 
+                color="#ef4444" 
+              />
+
+              {/* Resumo */}
+              <Card className="shadow-md border-0 bg-gradient-to-br from-blue-500 to-violet-600">
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-semibold text-white">Resumo Executivo</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4 px-4 text-white">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-blue-100">Taxa de Confirmação:</span>
+                      <span className="font-bold text-lg">{data?.kpis?.percentualConfirmacao}%</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2">
+                      <div 
+                        className="bg-green-400 h-2 rounded-full" 
+                        style={{ width: `${data?.kpis?.percentualConfirmacao || 0}%` }}
+                      ></div>
+                    </div>
+                    <div className="pt-2 text-xs text-blue-100 space-y-1">
+                      <div className="flex justify-between"><span>Oportunidades:</span><span>{(data?.kpis?.totalOportunidades || 0).toLocaleString('pt-BR')}</span></div>
+                      <div className="flex justify-between"><span>Mat. Financeiras:</span><span>{(data?.kpis?.totalMatFin || 0).toLocaleString('pt-BR')}</span></div>
+                      <div className="flex justify-between"><span>Mat. Acadêmicas:</span><span>{(data?.kpis?.totalMatAcad || 0).toLocaleString('pt-BR')}</span></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+
+        {/* Seção: Todas as Turmas */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-violet-500" />
+            Todas as Turmas
+            <Badge variant="secondary" className="ml-2">{data?.turmas?.paginacao?.registros?.toLocaleString('pt-BR') || 0} turmas</Badge>
+          </h2>
+
+          <Card className="shadow-md border-0">
+            <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead><tr className="border-b bg-gray-50">
-                    <th className="text-left p-2 font-medium">Campus/Polo</th>
-                    <th className="text-left p-2 font-medium">Curso</th>
-                    <th className="text-left p-2 font-medium">Turno</th>
-                    <th className="text-center p-2 font-medium">Total</th>
-                    <th className="text-center p-2 font-medium bg-green-50 text-green-700">Confirmado SIM</th>
-                    <th className="text-center p-2 font-medium bg-red-50 text-red-700">Confirmado NÃO</th>
-                    <th className="text-center p-2 font-medium">Mat. Fin.</th>
-                    <th className="text-center p-2 font-medium">Mat. Acad.</th>
-                    <th className="text-center p-2 font-medium">Conversão</th>
-                  </tr></thead>
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-100 border-b">
+                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Curso</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Modelo de Ensino</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Turno</th>
+                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">MAT FIN</th>
+                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">MAT ACAD</th>
+                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">PE</th>
+                      <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
                   <tbody>
-                    {loading ? [...Array(10)].map((_, i) => <tr key={i} className="border-b">{[...Array(9)].map((_, j) => <td key={j} className="p-2"><Skeleton className="h-3 w-full" /></td>)}</tr>) 
-                    : data?.visaoConsolidada?.dados?.map((r: any, i: number) => (
-                      <tr key={i} className="border-b hover:bg-gray-50">
-                        <td className="p-2 truncate max-w-[150px]" title={r.campus}>{r.campus}</td>
-                        <td className="p-2 font-medium truncate max-w-[180px]" title={r.curso}>{r.curso}</td>
-                        <td className="p-2">{r.turno}</td>
-                        <td className="p-2 text-center font-bold">{r.total.toLocaleString('pt-BR')}</td>
-                        <td className="p-2 text-center bg-green-50">
-                          <Badge className="bg-green-500 text-white text-[10px] font-bold">{r.confirmadosSim.toLocaleString('pt-BR')}</Badge>
+                    {loading ? (
+                      [...Array(10)].map((_, i) => (
+                        <tr key={i} className="border-b"><td colSpan={7} className="p-3"><Skeleton className="h-4 w-full" /></td></tr>
+                      ))
+                    ) : data?.turmas?.dados?.map((t: any, i: number) => (
+                      <tr key={i} className={`border-b hover:bg-gray-50 transition-colors ${t.status === 'Confirmado' ? 'bg-green-50/30' : ''}`}>
+                        <td className="p-3">
+                          <span className="font-medium text-gray-800 text-sm" title={t.curso}>
+                            {t.curso.length > 35 ? `${t.curso.slice(0, 35)}...` : t.curso}
+                          </span>
                         </td>
-                        <td className="p-2 text-center bg-red-50">
-                          <Badge className="bg-red-400 text-white text-[10px] font-bold">{r.confirmadosNao.toLocaleString('pt-BR')}</Badge>
+                        <td className="p-3 text-sm text-gray-600">{t.modelo}</td>
+                        <td className="p-3 text-sm text-gray-600">{t.turno}</td>
+                        <td className="p-3 text-center">
+                          <span className="font-semibold text-green-600">{t.matFin}</span>
                         </td>
-                        <td className="p-2 text-center">{r.matFin.toLocaleString('pt-BR')}</td>
-                        <td className="p-2 text-center">{r.matAcad.toLocaleString('pt-BR')}</td>
-                        <td className="p-2 text-center">
-                          <Badge variant="outline" className={`text-[10px] ${parseFloat(r.taxaConversao) > 20 ? 'text-green-600 border-green-300' : parseFloat(r.taxaConversao) > 10 ? 'text-amber-600 border-amber-300' : 'text-gray-500'}`}>
-                            {r.taxaConversao}%
+                        <td className="p-3 text-center">
+                          <span className="font-semibold text-teal-600">{t.matAcad}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className="text-gray-500">{t.pe}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <Badge 
+                            className={`${t.status === 'Confirmado' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white font-medium px-3 py-1`}
+                          >
+                            {t.status === 'Confirmado' ? 'SIM' : 'NÃO'}
                           </Badge>
                         </td>
                       </tr>
@@ -281,77 +388,42 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex justify-between items-center mt-3">
-                <span className="text-[10px] text-gray-400">
-                  Mostrando {((data?.visaoConsolidada?.pag?.atual || 1) - 1) * 15 + 1}-{Math.min((data?.visaoConsolidada?.pag?.atual || 1) * 15, data?.visaoConsolidada?.pag?.registros || 0)} de {data?.visaoConsolidada?.pag?.registros?.toLocaleString('pt-BR') || 0}
+              
+              {/* Paginação */}
+              <div className="flex justify-between items-center p-4 border-t bg-gray-50">
+                <span className="text-sm text-gray-500">
+                  Mostrando {((data?.turmas?.paginacao?.atual || 1) - 1) * 20 + 1} - {Math.min((data?.turmas?.paginacao?.atual || 1) * 20, data?.turmas?.paginacao?.registros || 0)} de {data?.turmas?.paginacao?.registros?.toLocaleString('pt-BR') || 0}
                 </span>
-                <div className="flex gap-1">
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setPaginaVisao(p => Math.max(1, p - 1))} disabled={paginaVisao === 1 || loading}>←</Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setPaginaVisao(p => Math.min(data?.visaoConsolidada?.pag?.total || 1, p + 1))} disabled={paginaVisao >= (data?.visaoConsolidada?.pag?.total || 1) || loading}>→</Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setPagina(p => Math.max(1, p - 1))} 
+                    disabled={pagina === 1 || loading}
+                  >
+                    Anterior
+                  </Button>
+                  <span className="flex items-center px-3 text-sm text-gray-600">
+                    Página {data?.turmas?.paginacao?.atual || 1} de {data?.turmas?.paginacao?.total || 1}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setPagina(p => Math.min(data?.turmas?.paginacao?.total || 1, p + 1))} 
+                    disabled={pagina >= (data?.turmas?.paginacao?.total || 1) || loading}
+                  >
+                    Próximo
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
-        )}
+        </div>
 
-        {/* Tabela Detalhada */}
-        <Card className="shadow-sm">
-          <CardHeader className="py-2 px-3 flex-row flex justify-between items-center space-y-0">
-            <div>
-              <CardTitle className="text-sm">Dados Detalhados</CardTitle>
-              <p className="text-xs text-gray-400">{data?.tabela?.pag?.registros?.toLocaleString('pt-BR') || 0} registros</p>
-            </div>
-            <span className="text-xs text-gray-400">Pág. {data?.tabela?.pag?.atual || 1} de {data?.tabela?.pag?.total || 1}</span>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead><tr className="border-b bg-gray-50">
-                  <th className="text-left p-1.5 font-medium">Campus</th>
-                  <th className="text-left p-1.5 font-medium">Curso</th>
-                  <th className="text-left p-1.5 font-medium">Turno</th>
-                  <th className="text-left p-1.5 font-medium">Modelo</th>
-                  <th className="text-left p-1.5 font-medium">Fase</th>
-                  <th className="text-center p-1.5 font-medium">Confirmado</th>
-                  <th className="text-center p-1.5 font-medium">Fin</th>
-                  <th className="text-center p-1.5 font-medium">Acad</th>
-                  <th className="text-center p-1.5 font-medium">Doc</th>
-                  <th className="text-left p-1.5 font-medium">Data</th>
-                </tr></thead>
-                <tbody>
-                  {loading ? [...Array(5)].map((_, i) => <tr key={i} className="border-b">{[...Array(10)].map((_, j) => <td key={j} className="p-1.5"><Skeleton className="h-3 w-full" /></td>)}</tr>) 
-                  : data?.tabela?.dados?.map((r: any, i: number) => (
-                    <tr key={i} className="border-b hover:bg-gray-50">
-                      <td className="p-1.5 truncate max-w-[100px]" title={r.campus}>{r.campus}</td>
-                      <td className="p-1.5 truncate max-w-[150px]" title={r.curso}>{r.curso}</td>
-                      <td className="p-1.5">{r.turno}</td>
-                      <td className="p-1.5">{r.modelo}</td>
-                      <td className="p-1.5"><Badge variant="outline" className="text-[10px]">{r.fase?.slice(0, 12)}</Badge></td>
-                      <td className="p-1.5 text-center">
-                        <Badge className={r.confirmado === 'SIM' ? 'bg-green-500 text-white text-[10px] font-bold' : 'bg-red-400 text-white text-[10px] font-bold'}>
-                          {r.confirmado}
-                        </Badge>
-                      </td>
-                      <td className="p-1.5 text-center"><Badge className={r.fin === 'Sim' ? 'bg-green-500 text-white text-[10px]' : 'text-[10px]'} variant={r.fin === 'Sim' ? 'default' : 'secondary'}>{r.fin}</Badge></td>
-                      <td className="p-1.5 text-center"><Badge className={r.acad === 'Sim' ? 'bg-emerald-500 text-white text-[10px]' : 'text-[10px]'} variant={r.acad === 'Sim' ? 'default' : 'secondary'}>{r.acad}</Badge></td>
-                      <td className="p-1.5 text-center"><Badge className={r.doc === 'Entregue' ? 'bg-amber-500 text-white text-[10px]' : 'text-[10px]'} variant={r.doc === 'Entregue' ? 'default' : 'secondary'}>{r.doc}</Badge></td>
-                      <td className="p-1.5 text-gray-400">{r.data}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex justify-between items-center mt-3">
-              <span className="text-[10px] text-gray-400">Mostrando {((data?.tabela?.pag?.atual || 1) - 1) * 10 + 1}-{Math.min((data?.tabela?.pag?.atual || 1) * 10, data?.tabela?.pag?.registros || 0)} de {data?.tabela?.pag?.registros?.toLocaleString('pt-BR') || 0}</span>
-              <div className="flex gap-1">
-                <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1 || loading}>←</Button>
-                <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setPagina(p => Math.min(data?.tabela?.pag?.total || 1, p + 1))} disabled={pagina >= (data?.tabela?.pag?.total || 1) || loading}>→</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <p className="text-center text-[10px] text-gray-300 mt-3">Atualizado em {new Date().toLocaleDateString('pt-BR')}</p>
+        {/* Footer */}
+        <div className="mt-6 text-center text-xs text-gray-400">
+          Painel de Resultados Educacionais • Atualizado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
+        </div>
       </div>
     </div>
   )
