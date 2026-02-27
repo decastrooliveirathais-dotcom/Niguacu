@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { Users, GraduationCap, DollarSign, TrendingUp, TrendingDown, CheckCircle, XCircle, Search, RefreshCw, BookOpen } from 'lucide-react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -128,9 +129,17 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Painel de Resultados Educacionais</h1>
-          <p className="text-gray-500 mt-1">Acompanhamento de Matrículas - Período 2026.1</p>
+        <div className="mb-6 flex items-center gap-4">
+          <img 
+            src="/estacio-logo.png" 
+            alt="Estácio" 
+            className="h-14 w-auto object-contain"
+            style={{ maxHeight: '56px', width: 'auto' }}
+          />
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard - Acompanhamento de cursos</h1>
+            <p className="text-gray-500 text-sm">Período 2026.1</p>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -424,7 +433,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <div className="mt-6 text-center text-xs text-gray-400">
-          Painel de Resultados Educacionais • Atualizado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
+          Dashboard - Acompanhamento de cursos • Atualizado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
         </div>
       </div>
     </div>
