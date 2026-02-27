@@ -1,0 +1,297 @@
+[
+  {
+    "curso": "AUTOMACAO INDUSTRIAL",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "LETRAS - LINGUA PORTUGUESA - LICENCIATURA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ADMINISTRACAO",
+    "turno": "MANHA",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "AUTOMACAO INDUSTRIAL",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "REDES DE COMPUTADORES",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS BIOLOGICAS - BACHARELADO",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO FINANCEIRA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "MANHA",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "AUTOMACAO INDUSTRIAL",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "ARTES VISUAIS",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ENGENHARIA DE PRODUCAO",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "ANALISE E DESENVOLVIMENTO DE SISTEMAS",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "MANHA",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ARTES VISUAIS",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO FINANCEIRA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS BIOLOGICAS - BACHARELADO",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO COMERCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ARTES VISUAIS",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS BIOLOGICAS - BACHARELADO",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ENGENHARIA DE COMPUTACAO",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ENGENHARIA DE PRODUCAO",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ADMINISTRACAO",
+    "turno": "MANHA",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "LETRAS - LINGUA PORTUGUESA - LICENCIATURA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "LETRAS - INGLES",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO FINANCEIRA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO COMERCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO COMERCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ANALISE E DESENVOLVIMENTO DE SISTEMAS",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ENGENHARIA DE PRODUCAO",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "MATEMATICA - LICENCIATURA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS ECONOMICAS",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS BIOLOGICAS - BACHARELADO",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "MANHA",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO FINANCEIRA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS BIOLOGICAS - LICENCIATURA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "GESTAO COMERCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "CIENCIAS BIOLOGICAS - BACHARELADO",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "AUTOMACAO INDUSTRIAL",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "LETRAS - INGLES",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "LETRAS - INGLES",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "HISTORIA - LICENCIATURA",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "TERAPIA OCUPACIONAL",
+    "turno": "MANHA",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "SERVICO SOCIAL",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "LETRAS - INGLES",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  },
+  {
+    "curso": "ANALISE E DESENVOLVIMENTO DE SISTEMAS",
+    "turno": "NOITE",
+    "campus": "NOVA IGUACU"
+  },
+  {
+    "curso": "LETRAS - INGLES",
+    "turno": "NOITE",
+    "campus": "POLO NOVA IGUACU - RJ"
+  }
+]

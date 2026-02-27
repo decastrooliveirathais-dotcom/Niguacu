@@ -347,6 +347,7 @@ export default function Dashboard() {
                       <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Curso</th>
                       <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Modelo de Ensino</th>
                       <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Turno</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Campus</th>
                       <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">MAT FIN</th>
                       <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">MAT ACAD</th>
                       <th className="text-center p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">PE</th>
@@ -356,17 +357,18 @@ export default function Dashboard() {
                   <tbody>
                     {loading ? (
                       [...Array(10)].map((_, i) => (
-                        <tr key={i} className="border-b"><td colSpan={7} className="p-3"><Skeleton className="h-4 w-full" /></td></tr>
+                        <tr key={i} className="border-b"><td colSpan={8} className="p-3"><Skeleton className="h-4 w-full" /></td></tr>
                       ))
                     ) : data?.turmas?.dados?.map((t: any, i: number) => (
-                      <tr key={i} className={`border-b hover:bg-gray-50 transition-colors ${t.status === 'Confirmado' ? 'bg-green-50/30' : ''}`}>
+                      <tr key={i} className={`border-b hover:bg-gray-50 transition-colors ${t.status === 'Não Confirmado' ? 'bg-red-50/50' : ''}`}>
                         <td className="p-3">
                           <span className="font-medium text-gray-800 text-sm" title={t.curso}>
-                            {t.curso.length > 35 ? `${t.curso.slice(0, 35)}...` : t.curso}
+                            {t.curso.length > 30 ? `${t.curso.slice(0, 30)}...` : t.curso}
                           </span>
                         </td>
                         <td className="p-3 text-sm text-gray-600">{t.modelo}</td>
                         <td className="p-3 text-sm text-gray-600">{t.turno}</td>
+                        <td className="p-3 text-sm text-gray-600 truncate max-w-[120px]" title={t.campus}>{t.campus}</td>
                         <td className="p-3 text-center">
                           <span className="font-semibold text-green-600">{t.matFin}</span>
                         </td>
